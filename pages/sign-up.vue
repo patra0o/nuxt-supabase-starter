@@ -1,86 +1,98 @@
 <script setup lang="ts">
-  import { signUpValidation, type SchemaSignUpValidation } from '~/utils/formValidation'
-  import type { FormSubmitEvent } from '#ui/types'
-  import { BaseError, useErrorHandler } from '~/composables/use-error-handler'
-  
-  definePageMeta({
-    middleware: 'guest'
-  })
+import { signUpValidation, type SchemaSignUpValidation } from '~/utils/formValidation'
+import type { FormSubmitEvent } from '#ui/types'
+import { BaseError, useErrorHandler } from '~/composables/use-error-handler'
 
-  useSeoMeta({
-    title: 'Sign Up - Nuxt Supabase Starter',
-  })
+definePageMeta({
+  middleware: 'guest'
+})
 
-  const { auth } = useSupabaseClient()
-  const { errorHandler } = useErrorHandler()
+useSeoMeta({
+  title: 'Sign Up - Tulongeni',
+})
 
-  const form = reactive({
-    email: undefined,
-    password: undefined
-  })
+const { auth } = useSupabaseClient()
+const { errorHandler } = useErrorHandler()
+const toast = useToast()
 
-  const isLoading = ref(false)
+const form = reactive({
+  email: undefined,
+  password: undefined
+})
 
-  /**
-   * Sign up with credential.
-   *
-   * @param {FormSubmitEvent<SchemaSignUpValidation>} event - The form submit event.
-   * @return {Promise<void>} A promise that resolves when the sign-up process is completed.
-   */
-  const signUpWithCredential = async (event: FormSubmitEvent<SchemaSignUpValidation>) => {
-    try {
-      isLoading.value = true
+const isLoading = ref(false)
 
-      const signUp = await auth.signUp({
-        email: form.email ?? '',
-        password: form.password ?? ''
+/**
+ * Sign up with credential.
+ *
+ * @param {FormSubmitEvent<SchemaSignUpValidation>} event - The form submit event.
+ * @return {Promise<void>} A promise that resolves when the sign-up process is completed.
+ */
+const signUpWithCredential = async (event: FormSubmitEvent<SchemaSignUpValidation>) => {
+  try {
+    isLoading.value = true
+
+    const signUp = await auth.signUp({
+      email: form.email ?? '',
+      password: form.password ?? ''
+    })
+
+    if (signUp.error) {
+      throw new BaseError(signUp.error.status, signUp.error.message)
+    }
+
+    toast.add({
+      title: 'Sign Up Successful',
+      description: 'A confirmation email has been sent to your email address.',
+      icon: 'i-heroicons-check-circle',
+      color: 'green',
+    })
+
+    setTimeout(() => {
+      navigateTo('/dashboard')
+    }, 5000)
+
+    isLoading.value = false
+  } catch (error) {
+    isLoading.value = false
+    errorHandler(error as BaseError)
+  }
+}
+
+
+/**
+ * Sign up with the specified provider.
+ *
+ * @param {string} provider - The provider to sign up with (either 'GITHUB' or 'GOOGLE').
+ * @return {Promise<void>} A promise that resolves when the sign-up process is complete.
+ */
+const signUpWithProvider = async (provider: 'GITHUB' | 'GOOGLE') => {
+  try {
+    isLoading.value = true
+
+    let signUp = null
+
+    if (provider === 'GITHUB') {
+      signUp = await auth.signInWithOAuth({
+        provider: 'github',
+        options: {
+          redirectTo: `${window.location.origin}/confirm`
+        }
       })
-
-      if(signUp.error) {
-        throw new BaseError(signUp.error.status, signUp.error.message)
-      }
-
-      navigateTo('/dashboard')
-      isLoading.value = false
-    } catch (error) {
-      isLoading.value = false
-      errorHandler(error as BaseError)
     }
-  }
 
-  /**
-   * Sign up with the specified provider.
-   *
-   * @param {string} provider - The provider to sign up with (either 'GITHUB' or 'GOOGLE').
-   * @return {Promise<void>} A promise that resolves when the sign-up process is complete.
-   */
-  const signUpWithProvider = async (provider: 'GITHUB' | 'GOOGLE') =>  {
-    try {
-      isLoading.value = true
-      
-      let signUp = null
-
-      if(provider === 'GITHUB') {
-        signUp = await auth.signInWithOAuth({
-          provider: 'github',
-          options: {
-            redirectTo: `${window.location.origin}/confirm`
-          }
-        })
-      }
-
-      if(signUp?.error) {
-        isLoading.value = false
-        throw new BaseError(signUp.error.status, signUp.error.message)
-      }
-
-      navigateTo('/dashboard')
+    if (signUp?.error) {
       isLoading.value = false
-    } catch (error) {
-      isLoading.value = false
-      errorHandler(error as BaseError)
+      throw new BaseError(signUp.error.status, signUp.error.message)
     }
+
+    navigateTo('/dashboard')
+    isLoading.value = false
+  } catch (error) {
+    isLoading.value = false
+    errorHandler(error as BaseError)
   }
+}
 </script>
 
 <template>
@@ -91,11 +103,8 @@
           <UCard>
             <UForm :schema="signUpValidation" :state="form" class="space-y-2" @submit="signUpWithCredential">
               <div class="space-y-4">
-                <div class="flex justify-center">
-                  <img src="/icon.svg" class="h-[80px]">
-                </div>
 
-                <p class="text-lg font-bold text-center">Register an account by entering your email and password.</p>
+                <p class="text-lg font-bold text-center">Create an account, today.</p>
 
                 <UFormGroup label="Email" name="email">
                   <UInput v-model="form.email" />
@@ -105,19 +114,13 @@
                   <UInput v-model="form.password" type="password" />
                 </UFormGroup>
 
-                <UButton 
-                :loading="isLoading"
-                :disabled="isLoading"
-                type="submit" label="Register" color="gray" block />
+                <UButton :loading="isLoading" :disabled="isLoading" type="submit" label="Register" color="gray" block />
               </div>
               <UDivider label="or" color="gray" orientation="vertical" />
 
               <div class="space-y-4 flex flex-col justify-center">
-                <UButton 
-                @click="signUpWithProvider('GITHUB')"
-                :disabled="isLoading"
-                color="black" label="Continue with GitHub" 
-                icon="i-lucide-github" block />
+                <UButton @click="signUpWithProvider('GITHUB')" :disabled="isLoading" color="black"
+                  label="Continue with GitHub" icon="i-lucide-github" block />
               </div>
             </UForm>
           </UCard>
@@ -132,6 +135,4 @@
   </div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

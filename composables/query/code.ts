@@ -70,7 +70,7 @@ export const useCodeQuery = () => {
 			.insert([
 				{
 					title: 'Untitled Code',
-					code: `<html>Welcome to Nuxt Supabase Starter</html>`,
+					code: `<html>Welcome to Tulongeni</html>`,
 					updated_at: new Date(),
 				},
 			])

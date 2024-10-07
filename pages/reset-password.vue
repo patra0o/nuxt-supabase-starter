@@ -1,53 +1,53 @@
 <script setup lang="ts">
-  import { resetPasswordValidation, type SchemaResetPasswordValidation } from '~/utils/formValidation'
-  import type { FormSubmitEvent } from '#ui/types'
-  import { BaseError, useErrorHandler } from '~/composables/use-error-handler'
+import { resetPasswordValidation, type SchemaResetPasswordValidation } from '~/utils/formValidation'
+import type { FormSubmitEvent } from '#ui/types'
+import { BaseError, useErrorHandler } from '~/composables/use-error-handler'
 
-  useSeoMeta({
-    title: 'Reset Password - Nuxt Supabase Starter',
-  })
+useSeoMeta({
+  title: 'Reset Password - Tulongeni',
+})
 
-  const { auth } = useSupabaseClient()
-  const toast = useToast()
-  const { errorHandler } = useErrorHandler()
-  
-  const form = reactive({
-    password: undefined
-  })
-  const isLoading = ref(false)
+const { auth } = useSupabaseClient()
+const toast = useToast()
+const { errorHandler } = useErrorHandler()
 
-  /**
-   * Reset password.
-   *
-   * @param {FormSubmitEvent<SchemaResetPasswordValidation>} event - The form submit event.
-   * @return {Promise<void>} A promise that resolves when the sign-in process is complete.
-   */
-  const signInWithCredential = async (event: FormSubmitEvent<SchemaResetPasswordValidation>) => {
-    try {
-      isLoading.value = true
+const form = reactive({
+  password: undefined
+})
+const isLoading = ref(false)
 
-      const resetPassword = await auth.updateUser({
-        password: form.password ?? ''
-      })
+/**
+ * Reset password.
+ *
+ * @param {FormSubmitEvent<SchemaResetPasswordValidation>} event - The form submit event.
+ * @return {Promise<void>} A promise that resolves when the sign-in process is complete.
+ */
+const signInWithCredential = async (event: FormSubmitEvent<SchemaResetPasswordValidation>) => {
+  try {
+    isLoading.value = true
 
-      if(resetPassword.error) {
-        throw new BaseError(resetPassword.error.status, resetPassword.error.message)
-      }
+    const resetPassword = await auth.updateUser({
+      password: form.password ?? ''
+    })
 
-      navigateTo('/sign-in')
-
-      toast.add({
-        color: "green",
-        icon: "i-lucide-lock-keyhole",
-        title: 'Success resetting password!',
-      })
-
-      isLoading.value = false
-    } catch (error) {
-      isLoading.value = false
-      errorHandler(error as BaseError)
+    if (resetPassword.error) {
+      throw new BaseError(resetPassword.error.status, resetPassword.error.message)
     }
+
+    navigateTo('/sign-in')
+
+    toast.add({
+      color: "green",
+      icon: "i-lucide-lock-keyhole",
+      title: 'Success resetting password!',
+    })
+
+    isLoading.value = false
+  } catch (error) {
+    isLoading.value = false
+    errorHandler(error as BaseError)
   }
+}
 </script>
 
 <template>
@@ -68,10 +68,8 @@
                   <UInput v-model="form.password" type="password" />
                 </UFormGroup>
 
-                <UButton 
-                :loading="isLoading"
-                :disabled="isLoading"
-                type="submit" label="Reset Password" color="gray" block />
+                <UButton :loading="isLoading" :disabled="isLoading" type="submit" label="Reset Password" color="gray"
+                  block />
               </div>
             </UForm>
           </UCard>
@@ -81,6 +79,4 @@
   </div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

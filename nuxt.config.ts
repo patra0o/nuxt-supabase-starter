@@ -2,7 +2,7 @@
 export default defineNuxtConfig({
 	app: {
 		head: {
-			title: 'Nuxt Supabase Starter - Supercharged Your Project',
+			title: 'Tulongeni - Supercharged Your Project',
 			htmlAttrs: {
 				lang: 'en',
 			},
@@ -22,6 +22,7 @@ export default defineNuxtConfig({
 	// extends: '@nuxt-themes/docus',
 	ui: {
 		icons: ['lucide'],
+		
 	},
 	supabase: {
 		redirect: false,

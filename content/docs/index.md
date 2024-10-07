@@ -1,5 +1,5 @@
 ---
-title: 'Nuxt Supabase Starter - Docs'
+title: 'Tulongeni - Docs'
 ---
 
 # Get Started
