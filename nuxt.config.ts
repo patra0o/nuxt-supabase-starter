@@ -28,8 +28,10 @@ export default defineNuxtConfig({
 		redirect: false,
 	},
 	runtimeConfig: {
+		GEMINI_API_KEY: process.env.VITE_GEMINI_API_KEY,
 		public: {
 			APP_URL: process.env.APP_URL,
+			
 		},
 	},
 	modules: [
