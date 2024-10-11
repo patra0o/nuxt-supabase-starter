@@ -3,9 +3,10 @@ import { ref, watch, onMounted } from 'vue';
 import { sub, format, isSameDay, type Duration } from 'date-fns';
 import { EMPLOYMENT_STATUS, EMPLOYMENT_TYPES, ranges, REGION, TYPE_OF_NOTIFICATION } from '~/types/constants';
 import JobCard from '~/components/job-card.vue';
-import type { Job } from '~/types/Job';
 import { DotLottieVue } from '@lottiefiles/dotlottie-vue';
 import { useJobs } from '~/composables/use-jobs';
+import { useUserFavourites } from '~/composables/use-user-favourites';
+const { user } = useUser();
 
 const {
   jobs,
@@ -21,8 +22,12 @@ const {
   dateRange,
   selectedCompanies,
   companyOptions,
-  fetchCompanies
+  fetchCompanies,
 } = useJobs();
+
+const {
+  fetchFavourites
+} = useUserFavourites();
 
 const selected = ref<{ start: Date | string; end: Date | string }>({
   start: '',
@@ -63,7 +68,16 @@ const applyFilters = () => {
 onMounted(() => {
   fetchJobs(currentPage.value);
   fetchCompanies();
+  fetchFavourites();
+
 });
+
+watch(user, (newUser) => {
+  if (newUser) {
+    fetchFavourites();
+  }
+});
+
 
 watch(selected, () => {
   applyFilters();
@@ -73,15 +87,12 @@ watch(currentPage, (newPage) => {
   fetchJobs(newPage);
 });
 
-const goToJobDetail = (job: Job) => {
-  navigateTo(`dashboard/jobs/${job.job_id}`);
-};
 </script>
 
 <template>
   <h1 class="text-2xl font-bold pt-5 max-w-[400px]">Welcome to Tulongeni</h1>
   <div v-if="isLoading" class="flex justify-center items-center h-screen">
-    <DotLottieVue autoplay loop src="ai_load.lottie" />
+    <DotLottieVue style="width: 20rem; height: 20rem;" autoplay loop src="ai_load.lottie" />
   </div>
   <div v-else>
     <div class="w-full mx-auto my-4 max-w-7xl">
@@ -132,7 +143,7 @@ const goToJobDetail = (job: Job) => {
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <JobCard v-for="job in jobs" :key="job.job_id" :job="job" @click="goToJobDetail(job)" />
+        <JobCard v-for="job in jobs" :key="job.job_id" :job="job" />
       </div>
 
       <div v-if="totalPages > 1" class="flex justify-center mt-4">

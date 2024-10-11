@@ -2,7 +2,7 @@
 export default defineNuxtConfig({
 	app: {
 		head: {
-			title: 'Tulongeni - Supercharged Your Project',
+			title: 'Tulongeni',
 			htmlAttrs: {
 				lang: 'en',
 			},

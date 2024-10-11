@@ -40,7 +40,7 @@ onMounted(async () => {
 <template>
     <div class="max-w-7xl sm:w-4/5 mx-auto my-6 relative">
         <div v-if="isLoading" class="flex justify-center items-center h-screen">
-            <DotLottieVue style="width: 36rem; height: 36rem;" autoplay loop src="/ai_load.lottie" />
+            <DotLottieVue style="width: 20rem; height: 20rem;" autoplay loop src="/ai_load.lottie" />
         </div>
         <div v-else>
             <div class="flex gap-6">

@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import type { Job } from '~/types/Job'
 import { cutText } from '~/utils/textHandler';
+import { useUserFavourites } from '~/composables/use-user-favourites';
+
 
 const props = defineProps<{
-    job: Job
+    job: Job,
+
 }>()
 
 const formattedPostedDate = computed(() => formatDate(props.job.posted_date))
@@ -27,13 +30,31 @@ const statusColor = computed(() => {
     }
 })
 
+const { addFavourite, removeFavourite, isFavourite } = useUserFavourites();
+
+const toggleFavourite = (event: Event) => {
+    event.stopPropagation();
+    if (isFavourite(props.job.job_id)) {
+        removeFavourite(props.job.job_id);
+    } else {
+        addFavourite(props.job.job_id);
+    }
+}
+const goToJobDetail = () => {
+    navigateTo(`dashboard/jobs/${props.job.job_id}`);
+};
+
 </script>
 
 <template>
-    <div class="job-card border border-base-200 dark:border-gray-100/10 p-3 rounded-md">
+    <div class="job-card border border-base-200 dark:border-gray-100/10 p-3 rounded-md" @click="goToJobDetail">
         <div class="flex items-center justify-between">
             <h1 class="font-bold mb-1">{{ formattedTitle }}</h1>
-            <UIcon name="i-lucide-heart" class="text-primary  w-5 h-5"> </UIcon>
+            <UIcon :name="isFavourite(job.job_id) ? 'i-heroicons-heart-solid' : 'i-lucide-heart'" :class="{
+                'text-red-400': isFavourite(job.job_id),
+                'text-slate-400': !isFavourite(job.job_id)
+            }" class="w-5 h-5 cursor-pointer" @click="toggleFavourite" />
+
         </div>
         <h2 class="text-md font-medium mb-1.5">{{ job.company }}</h2>
         <div class="flex gap-2 items-center mb-1">

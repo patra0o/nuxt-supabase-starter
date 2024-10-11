@@ -4,9 +4,8 @@ import type { Job } from "~/types/Job";
 
 export function useJobs() {
   const supabase = useSupabaseClient();
-  const { user } = useUser(); // Get the current user from the user composable
-  const jobs = ref<Job[]>([]);
-  const isLoading = ref(false);
+   const jobs = ref<Job[]>([]);
+   const isLoading = ref(false);
   const currentPage = ref(1);
   const pageSize = 10;
   const totalJobs = ref(0);
@@ -61,7 +60,7 @@ export function useJobs() {
        const { data, error, count } = await query;
   
       if (error) throw error;
- jobs.value = data;
+      jobs.value = data;
       totalJobs.value = count || 0;
     } catch (error) {
       console.error('Error fetching jobs:', error);
@@ -88,7 +87,7 @@ export function useJobs() {
       isLoading.value = false;
     }
   };
-
+ 
   const totalPages = computed(() => Math.ceil(totalJobs.value / pageSize));
 
   return {
@@ -108,5 +107,5 @@ export function useJobs() {
     fetchCompanies,
     selectedJob,
     fetchJobById,
-  };
+    };
 }
