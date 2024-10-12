@@ -40,14 +40,12 @@ const toggleFavourite = (event: Event) => {
         addFavourite(props.job.job_id);
     }
 }
-const goToJobDetail = () => {
-    navigateTo(`dashboard/jobs/${props.job.job_id}`);
-};
+
 
 </script>
 
 <template>
-    <div class="job-card border border-base-200 dark:border-gray-100/10 p-3 rounded-md" @click="goToJobDetail">
+    <div class="job-card border border-base-200 dark:border-gray-100/10 p-3 rounded-md shadow-md">
         <div class="flex items-center justify-between">
             <h1 class="font-bold mb-1">{{ formattedTitle }}</h1>
             <UIcon :name="isFavourite(job.job_id) ? 'i-heroicons-heart-solid' : 'i-lucide-heart'" :class="{

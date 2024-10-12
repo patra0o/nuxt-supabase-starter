@@ -28,12 +28,10 @@ const {
 const {
   fetchFavourites
 } = useUserFavourites();
-
 const selected = ref<{ start: Date | string; end: Date | string }>({
   start: '',
   end: '',
 });
-
 
 function isRangeSelected(duration: Duration) {
   const startDate = selected.value.start ? new Date(selected.value.start) : null;
@@ -60,7 +58,7 @@ const applyFilters = () => {
     };
   } else {
     dateRange.value = { start: null, end: null };
-  } console.log('Applying filters. Selected companies:', selectedCompanies.value);
+  }
 
   fetchJobs(1);
 };
@@ -78,7 +76,6 @@ watch(user, (newUser) => {
   }
 });
 
-
 watch(selected, () => {
   applyFilters();
 });
@@ -87,14 +84,19 @@ watch(currentPage, (newPage) => {
   fetchJobs(newPage);
 });
 
+const goToJobDetail = (job_id: string) => {
+  navigateTo(`dashboard/jobs/${job_id}`);
+};
+
 </script>
 
+
 <template>
-  <h1 class="text-2xl font-bold pt-5 max-w-[400px]">Welcome to Tulongeni</h1>
   <div v-if="isLoading" class="flex justify-center items-center h-screen">
-    <DotLottieVue style="width: 20rem; height: 20rem;" autoplay loop src="ai_load.lottie" />
+    <DotLottieVue style="width: 20rem; height: 20rem;" autoplay loop src="/ai_load.lottie" />
   </div>
   <div v-else>
+    <h1 class="text-2xl font-bold mt-12 mb-4 max-w-[400px]">Welcome to Tulongeni</h1>
     <div class="w-full mx-auto my-4 max-w-7xl">
       <div class="flex flex-col md:flex-row gap-4 mb-4">
         <UInput v-model="searchQuery" @input="applyFilters" type="text" icon="i-heroicons-magnifying-glass-20-solid"
@@ -143,7 +145,7 @@ watch(currentPage, (newPage) => {
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <JobCard v-for="job in jobs" :key="job.job_id" :job="job" />
+        <JobCard v-for="job in jobs" :key="job.job_id" :job="job" @click="goToJobDetail(job.job_id)" />
       </div>
 
       <div v-if="totalPages > 1" class="flex justify-center mt-4">

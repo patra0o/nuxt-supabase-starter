@@ -43,8 +43,8 @@ onMounted(async () => {
             <DotLottieVue style="width: 20rem; height: 20rem;" autoplay loop src="/ai_load.lottie" />
         </div>
         <div v-else>
-            <div class="flex gap-6">
-                <UButton @click="goBack" color="gray" variant="ghost" class="mb-4">
+            <div class="flex flex-col md:flex-row gap-2 mt-5">
+                <UButton @click="goBack" color="gray" variant="ghost" class="mb-0 md:mb-4">
                     <UIcon name="i-lucide-arrow-left" class="w-5 h-5 mr-2" />
                     Back
                 </UButton>
@@ -54,9 +54,9 @@ onMounted(async () => {
             <JobDetail :job="selectedJob!" />
         </div>
 
-        <div class="fixed bottom-2 -right-36 hover:cursor-pointer z-50">
+        <div class="fixed bottom-2 -right-24 hover:cursor-pointer z-50">
             <UTooltip text="Hi. I'm Jinja. Let me help.">
-                <DotLottieVue @click="openChatBot" style="width: 28rem;" autoplay loop src="/ai-bot.lottie" />
+                <DotLottieVue @click="openChatBot" style="width: 18rem;" autoplay loop src="/ai-bot.lottie" />
             </UTooltip>
         </div>
 

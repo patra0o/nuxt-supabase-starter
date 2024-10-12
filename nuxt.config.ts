@@ -18,11 +18,10 @@ export default defineNuxtConfig({
 			link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.png' }],
 		},
 	},
-	devtools: { enabled: true },
+	devtools: { enabled: true, },
 	// extends: '@nuxt-themes/docus',
 	ui: {
 		icons: ['lucide'],
-		
 	},
 	supabase: {
 		redirect: false,
@@ -31,7 +30,6 @@ export default defineNuxtConfig({
 		GEMINI_API_KEY: process.env.VITE_GEMINI_API_KEY,
 		public: {
 			APP_URL: process.env.APP_URL,
-			
 		},
 	},
 	modules: [
@@ -41,6 +39,7 @@ export default defineNuxtConfig({
 		'@vueuse/nuxt',
 		'@nuxtjs/supabase',
 		'@nuxt/content',
+		'@pinia/nuxt',
 	],
 	content: {
 		contentHead: true,

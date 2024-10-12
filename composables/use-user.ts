@@ -1,41 +1,49 @@
-import { ref, onMounted } from 'vue';
- import type { User } from '@supabase/supabase-js'; // Import the User type from Supabase
+import { ref, onMounted } from 'vue'
+import type { User } from '@supabase/supabase-js'
 
-const user = ref<User | null>(null);
-const loading = ref(true);  
+const user = ref<User | null>(null)
+const loading = ref(true)
 
 export function useUser() {
-  const supabase = useSupabaseClient();  
-  const fetchUser = async () => {
-    loading.value = true;
+  const tokenKey = 'sb-ybbvdbffldxjflvmuqrz-auth-token'
+  const fetchUserFromLocalStorage = () => {
+    const tokenString = localStorage.getItem(tokenKey)
 
-     const { data: { session }, error } = await supabase.auth.getSession();
+    if (tokenString) {
+      try {
+        const token = JSON.parse(tokenString)
 
-    if (error || !session) {
-      console.error('Error fetching session or no session exists:', error);
-      user.value = null;
+        if (token?.user) {
+          user.value = token.user
+        } else {
+          console.error('No user found in token')
+          user.value = null
+        }
+      } catch (error) {
+        console.error('Error parsing auth token:', error)
+        user.value = null
+      }
     } else {
-       user.value = session.user;
+      console.error('No auth token found in localStorage')
+      user.value = null
     }
 
-    loading.value = false;
-  };
+    loading.value = false
+  }
 
-   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
+  const signOut = () => {
+    localStorage.removeItem(tokenKey)
+    user.value = null
+  }
 
-    if (error) {
-      console.error('Error during sign out:', error.message);
-    }
+  onMounted(() => {
+    fetchUserFromLocalStorage()
+  })
 
-     user.value = null;
-  };
-   onMounted(fetchUser);
-
-   return {
+  return {
     user,
     loading,
-    fetchUser,
+    fetchUserFromLocalStorage,
     signOut,
-  };
+  }
 }
