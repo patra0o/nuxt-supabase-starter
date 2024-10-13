@@ -49,21 +49,23 @@ const linksTopNav = reactive([{
   exactMatch: true,
   to: '/dashboard/profile'
 },
-{
-  label: 'Code Editor',
-  icon: 'i-lucide-terminal-square',
-  exact: true,
-  exactQuery: true,
-  exactMatch: true,
-  to: '/dashboard/code-editor'
-}, {
-  label: 'Storage',
-  icon: 'i-lucide-archive-restore',
-  exact: true,
-  exactQuery: true,
-  exactMatch: true,
-  to: '/dashboard/storage'
-}])
+  // {
+  //   label: 'Code Editor',
+  //   icon: 'i-lucide-terminal-square',
+  //   exact: true,
+  //   exactQuery: true,
+  //   exactMatch: true,
+  //   to: '/dashboard/code-editor'
+  // }, {
+  //   label: 'Storage',
+  //   icon: 'i-lucide-archive-restore',
+  //   exact: true,
+  //   exactQuery: true,
+  //   exactMatch: true,
+  //   to: '/dashboard/storage'
+  // }
+]
+)
 
 const linksBottomNav = [{
   label: 'Search',
