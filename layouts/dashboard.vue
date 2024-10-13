@@ -42,6 +42,14 @@ const linksTopNav = reactive([{
   exactMatch: true,
   to: '/dashboard/favourites'
 }, {
+  label: 'Profile',
+  icon: 'i-lucide-user',
+  exact: true,
+  exactQuery: true,
+  exactMatch: true,
+  to: '/dashboard/profile'
+},
+{
   label: 'Code Editor',
   icon: 'i-lucide-terminal-square',
   exact: true,
