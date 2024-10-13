@@ -11,13 +11,17 @@ useSeoMeta({
   title: 'Sign Up - Tulongeni',
 })
 
-const { auth } = useSupabaseClient()
+const { auth, from } = useSupabaseClient()
+const supabase: any = useSupabaseClient()
 const { errorHandler } = useErrorHandler()
 const toast = useToast()
 
 const form = reactive({
   email: undefined,
-  password: undefined
+  password: undefined,
+  first_name: '',
+  last_name: '',
+  display_name: ''
 })
 
 const isLoading = ref(false)
@@ -32,13 +36,25 @@ const signUpWithCredential = async (event: FormSubmitEvent<SchemaSignUpValidatio
   try {
     isLoading.value = true
 
-    const signUp = await auth.signUp({
+    const { data: signUp, error: signUpError } = await auth.signUp({
       email: form.email ?? '',
       password: form.password ?? ''
     })
 
-    if (signUp.error) {
-      throw new BaseError(signUp.error.status, signUp.error.message)
+    if (signUpError || !signUp.user) {
+      throw new BaseError(signUpError?.status, signUpError!.message)
+    }
+
+    // Profile creation step
+    const { error: profileError } = await supabase.from('user_profiles').insert({
+      user_id: signUp.user.id,
+      first_name: form.first_name,
+      last_name: form.last_name,
+      display_name: form.display_name,
+    })
+
+    if (profileError) {
+      throw new BaseError(profileError.code, profileError.message)
     }
 
     toast.add({
@@ -106,6 +122,18 @@ const signUpWithProvider = async (provider: 'GITHUB' | 'GOOGLE') => {
 
                 <p class="text-lg font-bold text-center">Create an account, today.</p>
 
+                <UFormGroup label="First Name" name="first_name">
+                  <UInput v-model="form.first_name" />
+                </UFormGroup>
+
+                <UFormGroup label="Last Name" name="last_name">
+                  <UInput v-model="form.last_name" />
+                </UFormGroup>
+
+                <UFormGroup label="Display Name" name="display_name">
+                  <UInput v-model="form.display_name" />
+                </UFormGroup>
+
                 <UFormGroup label="Email" name="email">
                   <UInput v-model="form.email" />
                 </UFormGroup>
@@ -116,12 +144,12 @@ const signUpWithProvider = async (provider: 'GITHUB' | 'GOOGLE') => {
 
                 <UButton :loading="isLoading" :disabled="isLoading" type="submit" label="Register" color="gray" block />
               </div>
-              <UDivider label="or" color="gray" orientation="vertical" />
+              <!-- <UDivider label="or" color="gray" orientation="vertical" /> -->
 
-              <div class="space-y-4 flex flex-col justify-center">
+              <!-- <div class="space-y-4 flex flex-col justify-center">
                 <UButton @click="signUpWithProvider('GITHUB')" :disabled="isLoading" color="black"
                   label="Continue with GitHub" icon="i-lucide-github" block />
-              </div>
+              </div> -->
             </UForm>
           </UCard>
 
