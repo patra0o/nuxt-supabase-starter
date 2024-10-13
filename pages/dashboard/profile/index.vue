@@ -21,7 +21,8 @@
                     <USelect v-model="profile.gender" :options="genderOptions" icon="i-lucide-users" />
                 </UFormGroup>
                 <UFormGroup label="Nationality" name="nationality" class="mb-4">
-                    <USelect v-model="profile.nationality" :options="countryOptions" icon="i-lucide-flag" />
+                    <USelect v-model="profile.nationality" :options="countryOptions" label="name"
+                        icon="i-lucide-flag" />
                 </UFormGroup>
                 <UButton type="submit" color="primary" :loading="saving">Save</UButton>
             </UForm>
@@ -33,11 +34,18 @@
                 <UFormGroup label="Preferred Job Title" name="preferred_job_title" class="mb-4">
                     <UInput v-model="profile.preferred_job_title" icon="i-lucide-briefcase" />
                 </UFormGroup>
-                <UFormGroup label="Preferred Employment Type" name="preferred_employment_type" class="mb-4">
-                    <UInput v-model="profile.preferred_employment_type" icon="i-lucide-clock" />
+                <UFormGroup label="Skills (separated by comma)" name="skills" class="mb-4">
+                    <UInput v-model="skillsInput" @input="processSkills"
+                        placeholder="Enter your skills, separated by commas" icon="i-lucide-star" />
                 </UFormGroup>
+                <div class="text-sm text-gray-500 mb-4">
+                    <span v-if="parsedSkills.length">Parsed skills: {{ parsedSkills.join(', ') }}</span>
+                </div>
+                <!-- <UFormGroup label="Preferred Employment Type" name="preferred_employment_type" class="mb-4">
+                    <UInput v-model="profile.preferred_employment_type" icon="i-lucide-clock" />
+                </UFormGroup> -->
                 <UFormGroup label="Preferred Region" name="preferred_region" class="mb-4">
-                    <UInput v-model="profile.preferred_region" icon="i-lucide-map-pin" />
+                    <USelect v-model="profile.preferred_region" :options="REGION" icon="i-lucide-map-pin" />
                 </UFormGroup>
                 <UFormGroup label="Preferred Job Type" name="preferred_job_type" class="mb-4">
                     <USelect v-model="profile.preferred_job_type" :options="jobTypeOptions" icon="i-lucide-briefcase" />
@@ -100,12 +108,10 @@
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { z } from 'zod'
-
-const countryList = require('country-list');
-
-const countryOptions = countryList.getNames().map((name: String) => ({
-    name
-}));
+import countries from 'i18n-iso-countries'
+import enLocale from 'i18n-iso-countries/langs/en.json'
+import { REGION } from '~/types/constants'
+countries.registerLocale(enLocale)
 
 const supabase: any = useSupabaseClient()
 const { user } = useUser()
@@ -161,6 +167,21 @@ const jobTypeOptions = [
     { label: 'Hybrid', value: 'hybrid' },
 ]
 
+
+const countryOptions = Object.entries(countries.getNames('en')).map(([code, name]) => ({
+    name: name, value: name,
+}))
+
+const skillsInput = ref('')
+const parsedSkills = ref<string[]>([])
+
+const processSkills = () => {
+    parsedSkills.value = skillsInput.value
+        .split(',')
+        .map(skill => skill.trim())
+        .filter(skill => skill !== '')
+}
+
 const personalInfoSchema = z.object({
     first_name: z.string().min(1, 'First name is required'),
     last_name: z.string().min(1, 'Last name is required'),
@@ -172,7 +193,7 @@ const personalInfoSchema = z.object({
 
 const preferencesSchema = z.object({
     preferred_job_title: z.string(),
-    preferred_employment_type: z.string(),
+    // preferred_employment_type: z.string(),
     preferred_region: z.string(),
     preferred_job_type: z.string(),
 })
@@ -212,6 +233,8 @@ onMounted(async () => {
 const updatePersonalInfo = async () => {
     saving.value = true
     try {
+        profile.value.skills = skillsInput.value.split(',').map(skill => skill.trim())
+
         const { error } = await supabase
             .from('user_profiles')
             .update({
@@ -235,11 +258,13 @@ const updatePersonalInfo = async () => {
 const updatePreferences = async () => {
     saving.value = true
     try {
+        profile.value.skills = parsedSkills.value
+
         const { error } = await supabase
             .from('user_profiles')
             .update({
                 preferred_job_title: profile.value.preferred_job_title,
-                preferred_employment_type: profile.value.preferred_employment_type,
+                // preferred_employment_type: profile.value.preferred_employment_type,
                 preferred_region: profile.value.preferred_region,
                 preferred_job_type: profile.value.preferred_job_type,
             })
