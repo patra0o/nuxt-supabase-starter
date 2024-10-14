@@ -85,7 +85,7 @@
                         </UFormGroup>
                         <UFormGroup :label="`Description ${index + 1}`" :name="`employment.${index}.description`"
                             class="mb-4">
-                            <UTextarea v-model="employmentEntry.role" icon="i-lucide-briefcase" />
+                            <UTextarea v-model="employmentEntry.description" icon="i-lucide-briefcase" />
                         </UFormGroup>
                         <UFormGroup :label="`Start Date ${index + 1}`" :name="`employment.${index}.start`" class="mb-4">
                             <UInput v-model="employmentEntry.start" type="date" icon="i-lucide-calendar-clock" />
