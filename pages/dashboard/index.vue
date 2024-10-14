@@ -96,8 +96,9 @@ const goToJobDetail = (job_id: string) => {
     <DotLottieVue style="width: 20rem; height: 20rem;" autoplay loop src="/ai_load.lottie" />
   </div>
   <div v-else>
-    <h1 class="text-2xl font-bold mt-12 mb-4 max-w-[400px]">Welcome to Tulongeni</h1>
-    <div class="w-full mx-auto my-4 max-w-7xl">
+    <div class="w-full mx-auto my-4 container">
+      <h1 class="text-2xl font-bold my-6">Welcome to Tulongeni</h1>
+
       <div class="flex flex-col md:flex-row gap-4 mb-4">
         <UInput v-model="searchQuery" @input="applyFilters" type="text" icon="i-heroicons-magnifying-glass-20-solid"
           placeholder="Search job title or description..." class="w-full md:w-1/3 " />
@@ -144,7 +145,7 @@ const goToJobDetail = (job_id: string) => {
           @update:modelValue="applyFilters" class="w-full md:w-1/3" />
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
         <JobCard v-for="job in jobs" :key="job.job_id" :job="job" @click="goToJobDetail(job.job_id)" />
       </div>
 

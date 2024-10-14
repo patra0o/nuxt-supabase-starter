@@ -52,7 +52,7 @@ const hasFavorites = computed(() => favoriteJobs.value.length > 0)
             <DotLottieVue style="width: 20rem; height: 20rem;" autoplay loop src="/ai_load.lottie" />
         </div>
 
-        <div v-else-if="hasFavorites" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div v-else-if="hasFavorites" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
             <JobCard v-for="job in favoriteJobs" :key="job.job_id" :job="job" @click="goToJobDetail(job.job_id)" />
         </div>
 

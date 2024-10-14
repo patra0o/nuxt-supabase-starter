@@ -6,25 +6,7 @@
         <!-- Personal Info Tab -->
         <template v-if="selected === 0">
             <div class="grid md:grid-cols-2 grid-cols-1 gap-4">
-                <UCard class="mb-8">
-                    <h2 class="text-xl font-semibold mb-4">Upload Your CV</h2>
-                    <div @dragover.prevent @drop.prevent="handleFileDrop"
-                        class="border-dashed border-2 border-gray-300 rounded-lg p-8 text-center cursor-pointer transition-colors"
-                        @click="$refs.fileInput.click()">
-                        <UIcon v-if="!uploadedFile" name="i-lucide-upload-cloud" class="text-4xl mb-2 text-gray-400" />
-                        <p v-if="!uploadedFile" class="text-gray-500">
-                            Drag and drop your CV here, or click to select a file
-                        </p>
-                        <p v-else class="text-green-600 font-semibold">
-                            {{ uploadedFile.name }}
-                        </p>
-                        <input type="file" accept=".pdf" @change="handleFileChange" class="hidden" ref="fileInput" />
-                    </div>
-                    <UButton class="mt-4 w-full" color="primary" @click="uploadCV" :loading="uploading"
-                        :disabled="!uploadedFile">
-                        {{ uploadedFile ? 'Upload CV' : 'Select a PDF file' }}
-                    </UButton>
-                </UCard>
+                <CvUpload />
                 <UForm :schema="personalInfoSchema" :state="profile" @submit="updatePersonalInfo">
                     <UFormGroup label="First Name" name="first_name" class="mb-4">
                         <UInput v-model="profile.first_name" icon="i-lucide-user" />
@@ -167,6 +149,7 @@ import { z } from 'zod'
 import countries from 'i18n-iso-countries'
 import enLocale from 'i18n-iso-countries/langs/en.json'
 import { REGION } from '~/types/constants'
+import CvUpload from '~/components/cv-upload.vue'
 countries.registerLocale(enLocale)
 
 const supabase: any = useSupabaseClient()
@@ -271,8 +254,6 @@ const removeEducationEntry = (index: number) => {
 }
 
 // --- Schemas for Validation ---
-
-// Personal Info schema
 const personalInfoSchema = z.object({
     first_name: z.string().min(1, 'First name is required'),
     last_name: z.string().min(1, 'Last name is required'),
@@ -282,14 +263,12 @@ const personalInfoSchema = z.object({
     nationality: z.string(),
 })
 
-// Preferences schema
 const preferencesSchema = z.object({
     preferred_job_title: z.string(),
     preferred_region: z.string(),
     preferred_job_type: z.string(),
 })
 
-// Employment schema
 const employmentSchema = z.object({
     about_me: z.string(),
     past_employment: z.array(
@@ -317,7 +296,6 @@ const educationSchema = z.object({
 
 // --- Form Submission Handlers ---
 
-// Updating personal info
 const updatePersonalInfo = async () => {
     saving.value = true
     try {
@@ -341,7 +319,6 @@ const updatePersonalInfo = async () => {
     }
 }
 
-// Updating preferences
 const updatePreferences = async () => {
     saving.value = true
     try {
@@ -363,7 +340,6 @@ const updatePreferences = async () => {
     }
 }
 
-// Saving employment information
 const saveEmployment = async () => {
     saving.value = true
     try {
@@ -383,7 +359,6 @@ const saveEmployment = async () => {
     }
 }
 
-// Saving education information
 const saveEducation = async () => {
     saving.value = true
     try {
@@ -417,54 +392,4 @@ onMounted(async () => {
         }
     }
 })
-
-const uploadedFile = ref<File | null>(null)
-const uploading = ref(false)
-
-const handleFileDrop = (event: DragEvent) => {
-    const file = event.dataTransfer?.files[0]
-    if (file && file.type === 'application/pdf') {
-        uploadedFile.value = file
-    } else {
-        alert('Please upload a valid PDF file.')
-    }
-}
-
-const handleFileChange = (event: Event) => {
-    const target = event.target as HTMLInputElement
-    const file = target.files?.[0]
-    if (file && file.type === 'application/pdf') {
-        uploadedFile.value = file
-    } else {
-        alert('Please upload a valid PDF file.')
-    }
-}
-
-const uploadCV = async () => {
-    if (!uploadedFile.value) {
-        alert('No file selected.')
-        return
-    }
-
-    uploading.value = true
-
-    try {
-        const { data, error } = await supabase
-            .storage
-            .from('span')
-            .upload(`resumes/${user.value!.id}/${uploadedFile.value.name}`, uploadedFile.value, {
-                cacheControl: '3600',
-                upsert: false,
-            })
-
-        if (error) throw error
-
-        console.log('CV uploaded successfully:', data)
-
-    } catch (error) {
-        console.error('Error uploading CV:', error)
-    } finally {
-        uploading.value = false
-    }
-}
 </script>
