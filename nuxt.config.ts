@@ -30,6 +30,7 @@ export default defineNuxtConfig({
 		GEMINI_API_KEY: process.env.VITE_GEMINI_API_KEY,
 		public: {
 			APP_URL: process.env.APP_URL,
+			CV_PARSER_URL: process.env.CV_PARSER_URL,
 		},
 	},
 	modules: [
