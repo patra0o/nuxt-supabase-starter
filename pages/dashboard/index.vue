@@ -145,7 +145,7 @@ const goToJobDetail = (job_id: string) => {
           @update:modelValue="applyFilters" class="w-full md:w-1/3" />
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-3 2xl:grid-cols-4 gap-4">
         <JobCard v-for="job in jobs" :key="job.job_id" :job="job" @click="goToJobDetail(job.job_id)" />
       </div>
 
