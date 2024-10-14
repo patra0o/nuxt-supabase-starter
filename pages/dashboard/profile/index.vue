@@ -2,48 +2,77 @@
     <h1 class="text-2xl font-bold my-8">Profile Settings</h1>
     <UTabs v-model="selected" :items="tabItems" />
     <UCard class="mt-4">
-        <div v-if="selected === 0">
-            <!-- Personal Info Form -->
-            <UForm :schema="personalInfoSchema" :state="profile" @submit="updatePersonalInfo">
-                <UFormGroup label="First Name" name="first_name" class="mb-4">
-                    <UInput v-model="profile.first_name" icon="i-lucide-user" />
-                </UFormGroup>
-                <UFormGroup label="Last Name" name="last_name" class="mb-4">
-                    <UInput v-model="profile.last_name" icon="i-lucide-user" />
-                </UFormGroup>
-                <UFormGroup label="Display Name" name="display_name" class="mb-4">
-                    <UInput v-model="profile.display_name" icon="i-lucide-contact" />
-                </UFormGroup>
-                <UFormGroup label="Date of Birth" name="dob" class="mb-4">
-                    <UInput v-model="profile.dob" type="date" icon="i-lucide-calendar" />
-                </UFormGroup>
-                <UFormGroup label="Gender" name="gender" class="mb-4">
-                    <USelect v-model="profile.gender" :options="genderOptions" icon="i-lucide-users" />
-                </UFormGroup>
-                <UFormGroup label="Nationality" name="nationality" class="mb-4">
-                    <USelect v-model="profile.nationality" :options="countryOptions" label="name"
-                        icon="i-lucide-flag" />
-                </UFormGroup>
-                <UButton type="submit" color="primary" :loading="saving">Save</UButton>
-            </UForm>
-        </div>
 
-        <div v-if="selected === 1">
-            <!-- Preferences Form -->
+        <!-- Personal Info Tab -->
+        <template v-if="selected === 0">
+            <div class="grid md:grid-cols-2 grid-cols-1 gap-4">
+                <UCard class="mb-8">
+                    <h2 class="text-xl font-semibold mb-4">Upload Your CV</h2>
+                    <div @dragover.prevent @drop.prevent="handleFileDrop"
+                        class="border-dashed border-2 border-gray-300 rounded-lg p-8 text-center cursor-pointer transition-colors"
+                        @click="$refs.fileInput.click()">
+                        <UIcon v-if="!uploadedFile" name="i-lucide-upload-cloud" class="text-4xl mb-2 text-gray-400" />
+                        <p v-if="!uploadedFile" class="text-gray-500">
+                            Drag and drop your CV here, or click to select a file
+                        </p>
+                        <p v-else class="text-green-600 font-semibold">
+                            {{ uploadedFile.name }}
+                        </p>
+                        <input type="file" accept=".pdf" @change="handleFileChange" class="hidden" ref="fileInput" />
+                    </div>
+                    <UButton class="mt-4 w-full" color="primary" @click="uploadCV" :loading="uploading"
+                        :disabled="!uploadedFile">
+                        {{ uploadedFile ? 'Upload CV' : 'Select a PDF file' }}
+                    </UButton>
+                </UCard>
+                <UForm :schema="personalInfoSchema" :state="profile" @submit="updatePersonalInfo">
+                    <UFormGroup label="First Name" name="first_name" class="mb-4">
+                        <UInput v-model="profile.first_name" icon="i-lucide-user" />
+                    </UFormGroup>
+                    <UFormGroup label="Last Name" name="last_name" class="mb-4">
+                        <UInput v-model="profile.last_name" icon="i-lucide-user" />
+                    </UFormGroup>
+                    <UFormGroup label="Display Name" name="display_name" class="mb-4">
+                        <UInput v-model="profile.display_name" icon="i-lucide-contact" />
+                    </UFormGroup>
+                    <UFormGroup label="Date of Birth" name="dob" class="mb-4">
+                        <UInput v-model="profile.dob" type="date" icon="i-lucide-calendar" />
+                    </UFormGroup>
+                    <UFormGroup label="Gender" name="gender" class="mb-4">
+                        <USelect v-model="profile.gender" :options="genderOptions" icon="i-lucide-users" />
+                    </UFormGroup>
+                    <UFormGroup label="Nationality" name="nationality" class="mb-4">
+                        <USelect v-model="profile.nationality" :options="countryOptions" label="name"
+                            icon="i-lucide-flag" />
+                    </UFormGroup>
+                    <UButton type="submit" color="primary" :loading="saving">Save</UButton>
+                </UForm>
+            </div>
+
+        </template>
+
+        <!-- Preferences Tab -->
+        <template v-if="selected === 1">
             <UForm :schema="preferencesSchema" :state="profile" @submit="updatePreferences">
                 <UFormGroup label="Preferred Job Title" name="preferred_job_title" class="mb-4">
                     <UInput v-model="profile.preferred_job_title" icon="i-lucide-briefcase" />
                 </UFormGroup>
-                <UFormGroup label="Skills (separated by comma)" name="skills" class="mb-4">
-                    <UInput v-model="skillsInput" @input="processSkills"
-                        placeholder="Enter your skills, separated by commas" icon="i-lucide-star" />
+
+                <!-- Skills Management Section -->
+                <UFormGroup label="Skills" name="skills" class="mb-4">
+                    <div class="flex gap-2 mb-2">
+                        <UInput v-model="skillsInput" placeholder="Type a skill" @keydown.enter.prevent="addSkill"
+                            icon="i-lucide-star" />
+                        <UButton @click="addSkill" variant="outline">Add</UButton>
+                    </div>
+                    <div v-if="Array.isArray(profile.skills) && profile.skills.length" class="flex gap-2 flex-wrap">
+                        <UBadge v-for="(skill, index) in profile.skills" :key="index" class="mb-2" variant="subtle">
+                            {{ skill }}
+                            <UIcon name="i-lucide-x" @click="removeSkill(index)" class="ml-2 cursor-pointer" />
+                        </UBadge>
+                    </div>
                 </UFormGroup>
-                <div class="text-sm text-gray-500 mb-4">
-                    <span v-if="parsedSkills.length">Parsed skills: {{ parsedSkills.join(', ') }}</span>
-                </div>
-                <!-- <UFormGroup label="Preferred Employment Type" name="preferred_employment_type" class="mb-4">
-                    <UInput v-model="profile.preferred_employment_type" icon="i-lucide-clock" />
-                </UFormGroup> -->
+
                 <UFormGroup label="Preferred Region" name="preferred_region" class="mb-4">
                     <USelect v-model="profile.preferred_region" :options="REGION" icon="i-lucide-map-pin" />
                 </UFormGroup>
@@ -52,21 +81,48 @@
                 </UFormGroup>
                 <UButton type="submit" color="primary" :loading="saving">Save</UButton>
             </UForm>
-        </div>
+        </template>
 
-        <div v-if="selected === 2">
-            <!-- Employment Form -->
+        <!-- Employment Tab -->
+        <template v-if="selected === 2">
             <UForm :schema="employmentSchema" :state="profile" @submit="saveEmployment">
-                <UFormGroup label="Past Employment" name="past_employment" class="mb-4">
-                    <UTextarea v-model="profile.past_employment" :rows="5" placeholder="Describe your past employment"
-                        icon="i-lucide-briefcase" />
+                <!-- About Me Section -->
+                <UFormGroup label="About Me" name="about_me" class="mb-4">
+                    <UTextarea v-model="profile.about_me" :rows="5" placeholder="Tell us about yourself"
+                        icon="i-lucide-user" />
                 </UFormGroup>
-                <UButton type="submit" color="primary" :loading="saving">Save</UButton>
-            </UForm>
-        </div>
 
-        <div v-if="selected === 3">
-            <!-- Education Form -->
+                <!-- Past Employment Section -->
+                <div v-for="(employmentEntry, index) in profile.past_employment" :key="index" class="mb-6">
+                    <UCard>
+                        <UFormGroup :label="`Company ${index + 1}`" :name="`employment.${index}.company`" class="mb-4">
+                            <UInput v-model="employmentEntry.company" icon="i-lucide-building" />
+                        </UFormGroup>
+                        <UFormGroup :label="`Role ${index + 1}`" :name="`employment.${index}.role`" class="mb-4">
+                            <UInput v-model="employmentEntry.role" icon="i-lucide-briefcase" />
+                        </UFormGroup>
+                        <UFormGroup :label="`Start Date ${index + 1}`" :name="`employment.${index}.start`" class="mb-4">
+                            <UInput v-model="employmentEntry.start" type="date" icon="i-lucide-calendar-clock" />
+                        </UFormGroup>
+                        <UFormGroup :label="`End Date ${index + 1}`" :name="`employment.${index}.end`" class="mb-4">
+                            <UInput v-model="employmentEntry.end" type="date" icon="i-lucide-calendar-check" />
+                        </UFormGroup>
+                        <UButton color="danger" @click="removeEmploymentEntry(index)" class="mt-2">
+                            <UIcon name="i-lucide-trash-2" class="mr-1" /> Remove
+                        </UButton>
+                    </UCard>
+                </div>
+                <div class="flex gap-4 mt-4">
+                    <UButton variant="outline" @click="addEmploymentEntry">
+                        <UIcon name="i-lucide-plus" class="mr-1" /> Add Employment
+                    </UButton>
+                    <UButton type="submit" color="primary" :loading="saving">Save</UButton>
+                </div>
+            </UForm>
+        </template>
+
+        <!-- Education Tab -->
+        <template v-if="selected === 3">
             <UForm :schema="educationSchema" :state="profile" @submit="saveEducation">
                 <div v-for="(educationEntry, index) in profile.education" :key="index" class="mb-6">
                     <UCard>
@@ -94,18 +150,18 @@
                     </UCard>
                 </div>
                 <div class="flex gap-4 mt-4">
-                    <UButton color="primary" @click="addEducationEntry">
+                    <UButton color="primary" @click="addEducationEntry" variant="outline">
                         <UIcon name="i-lucide-plus" class="mr-1" /> Add Education
                     </UButton>
                     <UButton type="submit" color="primary" :loading="saving">Save</UButton>
                 </div>
             </UForm>
-        </div>
+        </template>
     </UCard>
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { z } from 'zod'
 import countries from 'i18n-iso-countries'
@@ -116,6 +172,7 @@ countries.registerLocale(enLocale)
 const supabase: any = useSupabaseClient()
 const { user } = useUser()
 
+// Default user profile structure
 const profile = ref<UserProfile>({
     first_name: '',
     last_name: '',
@@ -125,14 +182,15 @@ const profile = ref<UserProfile>({
     nationality: '',
     education: [],
     skills: [],
-    experience: '',
-    past_employment: '',
+    about_me: '',
+    past_employment: [],
     preferred_job_title: '',
     preferred_employment_type: '',
     preferred_region: '',
     preferred_job_type: '',
 })
 
+// Tab management
 const tabItems = [
     { label: 'Personal Info', icon: 'i-lucide-user' },
     { label: 'Preferences', icon: 'i-lucide-sliders' },
@@ -167,21 +225,54 @@ const jobTypeOptions = [
     { label: 'Hybrid', value: 'hybrid' },
 ]
 
-
 const countryOptions = Object.entries(countries.getNames('en')).map(([code, name]) => ({
     name: name, value: name,
 }))
 
+// --- Skill management ---
 const skillsInput = ref('')
-const parsedSkills = ref<string[]>([])
 
-const processSkills = () => {
-    parsedSkills.value = skillsInput.value
-        .split(',')
-        .map(skill => skill.trim())
-        .filter(skill => skill !== '')
+const addSkill = () => {
+    if (!Array.isArray(profile.value.skills)) {
+        profile.value.skills = []
+    }
+
+    const newSkill = skillsInput.value.trim()
+    if (newSkill !== '' && !profile.value.skills.includes(newSkill)) {
+        profile.value.skills.push(newSkill)
+        skillsInput.value = ''
+    }
 }
 
+const removeSkill = (index: number) => {
+    if (Array.isArray(profile.value.skills)) {
+        profile.value.skills.splice(index, 1)
+    }
+}
+
+// --- About Me and Employment management ---
+const addEmploymentEntry = () => {
+    if (!Array.isArray(profile.value.past_employment)) {
+        profile.value.past_employment = []
+    }
+
+    profile.value.past_employment.push({ company: '', role: '', start: '', end: '' })
+}
+const removeEmploymentEntry = (index: number) => {
+    profile.value.past_employment.splice(index, 1)
+}
+
+// --- Education management ---
+const addEducationEntry = () => {
+    profile.value.education.push({ institution: '', start: '', end: '', programme: '', description: '' })
+}
+const removeEducationEntry = (index: number) => {
+    profile.value.education.splice(index, 1)
+}
+
+// --- Schemas for Validation ---
+
+// Personal Info schema
 const personalInfoSchema = z.object({
     first_name: z.string().min(1, 'First name is required'),
     last_name: z.string().min(1, 'Last name is required'),
@@ -191,50 +282,45 @@ const personalInfoSchema = z.object({
     nationality: z.string(),
 })
 
+// Preferences schema
 const preferencesSchema = z.object({
     preferred_job_title: z.string(),
-    // preferred_employment_type: z.string(),
     preferred_region: z.string(),
     preferred_job_type: z.string(),
 })
 
+// Employment schema
 const employmentSchema = z.object({
-    past_employment: z.string(),
+    about_me: z.string(),
+    past_employment: z.array(
+        z.object({
+            company: z.string().min(1, 'Company is required'),
+            role: z.string().min(1, 'Role is required'),
+            start: z.string().min(1, 'Start date is required'),
+            end: z.string(),
+        })
+    ),
 })
 
-const educationEntrySchema = z.object({
-    institution: z.string().min(1, 'Institution is required'),
-    start: z.string().min(1, 'Start date is required'),
-    end: z.string(),
-    programme: z.string().min(1, 'Programme is required'),
-    description: z.string(),
-})
-
+// Education schema
 const educationSchema = z.object({
-    education: z.array(educationEntrySchema),
+    education: z.array(
+        z.object({
+            institution: z.string().min(1, 'Institution is required'),
+            start: z.string().min(1, 'Start date is required'),
+            end: z.string(),
+            programme: z.string().min(1, 'Programme is required'),
+            description: z.string(),
+        })
+    ),
 })
 
-onMounted(async () => {
-    if (user.value) {
-        const { data, error } = await supabase
-            .from('user_profiles')
-            .select('*')
-            .eq('user_id', user.value.id)
-            .single()
+// --- Form Submission Handlers ---
 
-        if (data) {
-            profile.value = data
-        } else if (error) {
-            console.error('Error fetching profile:', error)
-        }
-    }
-})
-
+// Updating personal info
 const updatePersonalInfo = async () => {
     saving.value = true
     try {
-        profile.value.skills = skillsInput.value.split(',').map(skill => skill.trim())
-
         const { error } = await supabase
             .from('user_profiles')
             .update({
@@ -255,18 +341,17 @@ const updatePersonalInfo = async () => {
     }
 }
 
+// Updating preferences
 const updatePreferences = async () => {
     saving.value = true
     try {
-        profile.value.skills = parsedSkills.value
-
         const { error } = await supabase
             .from('user_profiles')
             .update({
                 preferred_job_title: profile.value.preferred_job_title,
-                // preferred_employment_type: profile.value.preferred_employment_type,
                 preferred_region: profile.value.preferred_region,
                 preferred_job_type: profile.value.preferred_job_type,
+                skills: profile.value.skills
             })
             .eq('user_id', user.value!.id)
 
@@ -278,12 +363,14 @@ const updatePreferences = async () => {
     }
 }
 
+// Saving employment information
 const saveEmployment = async () => {
     saving.value = true
     try {
         const { error } = await supabase
             .from('user_profiles')
             .update({
+                about_me: profile.value.about_me,
                 past_employment: profile.value.past_employment,
             })
             .eq('user_id', user.value!.id)
@@ -296,6 +383,7 @@ const saveEmployment = async () => {
     }
 }
 
+// Saving education information
 const saveEducation = async () => {
     saving.value = true
     try {
@@ -314,18 +402,69 @@ const saveEducation = async () => {
     }
 }
 
-const addEducationEntry = () => {
-    const newEducationEntry: EducationEntry = {
-        institution: '',
-        start: '',
-        end: '',
-        programme: '',
-        description: ''
+onMounted(async () => {
+    if (user.value) {
+        const { data, error } = await supabase
+            .from('user_profiles')
+            .select('*')
+            .eq('user_id', user.value.id)
+            .single()
+
+        if (data) {
+            profile.value = data
+        } else if (error) {
+            console.error('Error fetching profile:', error)
+        }
     }
-    profile.value.education.push(newEducationEntry)
+})
+
+const uploadedFile = ref<File | null>(null)
+const uploading = ref(false)
+
+const handleFileDrop = (event: DragEvent) => {
+    const file = event.dataTransfer?.files[0]
+    if (file && file.type === 'application/pdf') {
+        uploadedFile.value = file
+    } else {
+        alert('Please upload a valid PDF file.')
+    }
 }
 
-const removeEducationEntry = (index: number) => {
-    profile.value.education.splice(index, 1)
+const handleFileChange = (event: Event) => {
+    const target = event.target as HTMLInputElement
+    const file = target.files?.[0]
+    if (file && file.type === 'application/pdf') {
+        uploadedFile.value = file
+    } else {
+        alert('Please upload a valid PDF file.')
+    }
+}
+
+const uploadCV = async () => {
+    if (!uploadedFile.value) {
+        alert('No file selected.')
+        return
+    }
+
+    uploading.value = true
+
+    try {
+        const { data, error } = await supabase
+            .storage
+            .from('span')
+            .upload(`resumes/${user.value!.id}/${uploadedFile.value.name}`, uploadedFile.value, {
+                cacheControl: '3600',
+                upsert: false,
+            })
+
+        if (error) throw error
+
+        console.log('CV uploaded successfully:', data)
+
+    } catch (error) {
+        console.error('Error uploading CV:', error)
+    } finally {
+        uploading.value = false
+    }
 }
 </script>

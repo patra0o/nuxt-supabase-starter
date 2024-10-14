@@ -54,7 +54,7 @@ const toggleFavourite = (event: Event) => {
             }" class="w-5 h-5 cursor-pointer" @click="toggleFavourite" />
 
         </div>
-        <h2 class="text-md font-medium mb-1.5">{{ job.company }}</h2>
+        <h2 class="text-md font-medium mb-2 text-primary">{{ job.company }}</h2>
         <div class="flex gap-2 items-center mb-1">
             <UIcon name="i-lucide-map-pin" class="text-slate-400"></UIcon>
             <div class="text-sm opacity-75">
