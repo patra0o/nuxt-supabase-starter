@@ -83,6 +83,10 @@
                         <UFormGroup :label="`Role ${index + 1}`" :name="`employment.${index}.role`" class="mb-4">
                             <UInput v-model="employmentEntry.role" icon="i-lucide-briefcase" />
                         </UFormGroup>
+                        <UFormGroup :label="`Description ${index + 1}`" :name="`employment.${index}.description`"
+                            class="mb-4">
+                            <UTextarea v-model="employmentEntry.role" icon="i-lucide-briefcase" />
+                        </UFormGroup>
                         <UFormGroup :label="`Start Date ${index + 1}`" :name="`employment.${index}.start`" class="mb-4">
                             <UInput v-model="employmentEntry.start" type="date" icon="i-lucide-calendar-clock" />
                         </UFormGroup>
@@ -239,7 +243,7 @@ const addEmploymentEntry = () => {
         profile.value.past_employment = []
     }
 
-    profile.value.past_employment.push({ company: '', role: '', start: '', end: '' })
+    profile.value.past_employment.push({ company: '', role: '', description: '', start: '', end: '' })
 }
 const removeEmploymentEntry = (index: number) => {
     profile.value.past_employment.splice(index, 1)
@@ -247,6 +251,9 @@ const removeEmploymentEntry = (index: number) => {
 
 // --- Education management ---
 const addEducationEntry = () => {
+    if (!Array.isArray(profile.value.education)) {
+        profile.value.education = []
+    }
     profile.value.education.push({ institution: '', start: '', end: '', programme: '', description: '' })
 }
 const removeEducationEntry = (index: number) => {
@@ -275,6 +282,7 @@ const employmentSchema = z.object({
         z.object({
             company: z.string().min(1, 'Company is required'),
             role: z.string().min(1, 'Role is required'),
+            description: z.string().nullable(),
             start: z.string().min(1, 'Start date is required'),
             end: z.string(),
         })

@@ -10,6 +10,7 @@ interface EducationEntry {
 interface PastEmploymentEntry {
     company: string
     role: string
+    description: string | null
     start: string
     end: string
 }
